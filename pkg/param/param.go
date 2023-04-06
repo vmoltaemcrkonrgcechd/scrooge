@@ -82,3 +82,7 @@ func (p *Param) ToStructField() string {
 func (p *Param) ToFuncParam() string {
 	return utils.MustExecTemplate(templates.FuncParam, p)
 }
+
+func (p *Param) ToRecipient() string {
+	return utils.MustExecTemplate(templates.Recipient, p)
+}

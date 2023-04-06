@@ -8,7 +8,7 @@ import (
 
 type Struct struct {
 	Name   string
-	Fields []*param.Param
+	Fields param.Params
 }
 
 func New() *Struct {
