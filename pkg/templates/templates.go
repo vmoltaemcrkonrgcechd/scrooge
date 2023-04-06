@@ -13,4 +13,9 @@ var (
 		"{{.LowerCaseName}} {{if .Slice}}[]{{end}}{{if .Pointer}}*{{end}}" +
 			"{{$length := len .Pkg}}{{if ne $length 0}}{{.Pkg}}.{{end}}{{.Typ}}",
 	))
+
+	Struct = template.Must(template.New("Struct").Parse(
+		"type {{.Name}} struct {\n" +
+			"{{range .Fields}}{{.ToStructField}}\n{{end}}}",
+	))
 )
