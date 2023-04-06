@@ -1,9 +1,9 @@
 package param
 
 import (
-	"bytes"
-	"fmt"
-	"html/template"
+	"scrooge/pkg/templates"
+	"scrooge/pkg/utils"
+	"strings"
 )
 
 const (
@@ -67,18 +67,18 @@ func (p *Param) SetIn(in uint8) *Param {
 	return p
 }
 
-func (p *Param) ToStructField() string {
-	text := "{{if not .Embedded}}{{.Name}} {{end}}{{if .Slice}}[]{{end}}{{if .Pointer}}*{{end}}" +
-		"{{$length := len .Pkg}}{{if ne $length 0}}{{.Pkg}}.{{end}}" +
-		"{{.Typ}} {{$length := len .JSON}}{{if ne $length 0}}`json:\"{{.JSON}}\"`{{end}}"
-
-	buf := new(bytes.Buffer)
-
-	if err := template.Must(template.New("StructField").Parse(text)).Execute(buf, p); err != nil {
-		fmt.Println(err)
-
+func (p *Param) LowerCaseName() string {
+	if len(p.Name) == 0 {
 		return ""
 	}
 
-	return buf.String()
+	return strings.ToLower(p.Name[:1]) + p.Name[1:]
+}
+
+func (p *Param) ToStructField() string {
+	return utils.MustExecTemplate(templates.StructField, p)
+}
+
+func (p *Param) ToFuncParam() string {
+	return utils.MustExecTemplate(templates.FuncParam, p)
 }
