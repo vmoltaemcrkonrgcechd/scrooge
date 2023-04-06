@@ -18,4 +18,8 @@ var (
 		"type {{.Name}} struct {\n" +
 			"{{range .Fields}}{{.ToStructField}}\n{{end}}}",
 	))
+
+	Repo = template.Must(template.New("Repo").Parse(
+		`{{.Struct.Generate}}`,
+	))
 )
