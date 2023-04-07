@@ -2,14 +2,18 @@ package func_builder
 
 import (
 	"scrooge/pkg/param"
+	"scrooge/pkg/struct_builder"
 	"scrooge/pkg/utils"
 	"text/template"
 )
 
 type Body struct {
-	Params  param.Params
-	Returns param.Params
-	Tpl     *template.Template
+	Params        param.Params
+	Returns       param.Params
+	Tpl           *template.Template
+	Struct        *struct_builder.Struct
+	RecipientName string
+	Table         string
 }
 
 func NewBody() *Body {
@@ -28,6 +32,21 @@ func (b *Body) SetReturns(returns param.Params) *Body {
 
 func (b *Body) SetTpl(tpl *template.Template) *Body {
 	b.Tpl = tpl
+	return b
+}
+
+func (b *Body) SetStruct(str *struct_builder.Struct) *Body {
+	b.Struct = str
+	return b
+}
+
+func (b *Body) SetRecipientName(recipientName string) *Body {
+	b.RecipientName = recipientName
+	return b
+}
+
+func (b *Body) SetTable(table string) *Body {
+	b.Table = table
 	return b
 }
 

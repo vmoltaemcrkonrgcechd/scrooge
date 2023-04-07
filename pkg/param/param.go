@@ -21,6 +21,7 @@ type Param struct {
 	Slice    bool
 	Embedded bool
 	In       uint8
+	SQLName  string
 }
 
 func New() *Param {
@@ -64,6 +65,11 @@ func (p *Param) SetEmbedded(b bool) *Param {
 
 func (p *Param) SetIn(in uint8) *Param {
 	p.In = in
+	return p
+}
+
+func (p *Param) SetSQLName(sqlName string) *Param {
+	p.SQLName = sqlName
 	return p
 }
 

@@ -22,6 +22,14 @@ var (
 		"{{range $i,$v := .}}{{if ne $i 0}}, {{end}}{{.ToFuncParam}}{{end}}",
 	))
 
+	ParamNames = template.Must(template.New("ParamNames").Parse(
+		"{{range $i,$v := .}}{{if ne $i 0}}, {{end}}{{.LowerCaseName}}{{end}}",
+	))
+
+	ParamSQLNames = template.Must(template.New("ParamSQLNames").Parse(
+		"{{range $i,$v := .}}{{if ne $i 0}}, {{end}}\"{{.SQLName}}\"{{end}}",
+	))
+
 	Struct = template.Must(template.New("Struct").Parse(
 		"type {{.Name}} struct {\n" +
 			"{{range .Fields}}{{.ToStructField}}\n{{end}}}",
@@ -35,7 +43,19 @@ var (
 		"func {{if ne .Recipient nil}}{{.Recipient.ToRecipient}} {{end}}" +
 			"{{.Name}}({{.Params.Generate}}) " +
 			"{{$length := len .Returns}}{{if ge $length 2}}({{end}}" +
-			"{{.Params.Generate}}{{if ge $length 2}}){{end}} {\n" +
+			"{{.Returns.Generate}}{{if ge $length 2}}){{end}} {\n" +
 			"{{.Body.Generate}}\n}",
+	))
+
+	BodyRepoAdd = template.Must(template.New("BodyRepoAdd").Parse(
+		"if _, err = {{.RecipientName}}.Sq.Insert(\"{{.Table}}\").\n" +
+			"Columns({{.Struct.Fields.ParamSQLNames}}).\n" +
+			"Values(" +
+			"{{$str := .Struct}}" +
+			"{{range $i,$v := .Struct.Fields}}{{if ne $i 0}}, {{end}}{{$str.LowerCaseName}}.{{.Name}}{{end}}" +
+			").\n" +
+			"QueryRow().Scan(&{{.Returns.Path.LowerCaseName}}); err != nil {\n" +
+			"return {{.Returns.ParamNames}}\n}\n" +
+			"return {{.Returns.ParamNames}}",
 	))
 )

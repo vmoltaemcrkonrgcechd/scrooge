@@ -17,6 +17,24 @@ func (p Params) Body() *Param {
 	return nil
 }
 
+func (p Params) Path() *Param {
+	for _, val := range p {
+		if val.In == Path {
+			return val
+		}
+	}
+
+	return nil
+}
+
 func (p Params) Generate() string {
 	return utils.MustExecTemplate(templates.Params, p)
+}
+
+func (p Params) ParamNames() string {
+	return utils.MustExecTemplate(templates.ParamNames, p)
+}
+
+func (p Params) ParamSQLNames() string {
+	return utils.MustExecTemplate(templates.ParamSQLNames, p)
 }

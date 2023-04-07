@@ -2,8 +2,7 @@ package struct_builder
 
 import (
 	"scrooge/pkg/param"
-	"scrooge/pkg/templates"
-	"scrooge/pkg/utils"
+	"strings"
 )
 
 type Struct struct {
@@ -25,6 +24,10 @@ func (s *Struct) AddField(field *param.Param) *Struct {
 	return s
 }
 
-func (s *Struct) Generate() string {
-	return utils.MustExecTemplate(templates.Struct, s)
+func (s *Struct) LowerCaseName() string {
+	if len(s.Name) == 0 {
+		return ""
+	}
+
+	return strings.ToLower(s.Name[:1]) + s.Name[1:]
 }

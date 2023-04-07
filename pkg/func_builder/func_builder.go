@@ -39,7 +39,7 @@ func (f *Func) AddParam(p *param.Param) *Func {
 }
 
 func (f *Func) AddReturn(p *param.Param) *Func {
-	f.Returns = append(f.Params, p)
+	f.Returns = append(f.Returns, p)
 	return f
 }
 
