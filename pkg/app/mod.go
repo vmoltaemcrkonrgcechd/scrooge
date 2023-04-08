@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"scrooge/pkg/controller"
 	"scrooge/pkg/converter"
 	"scrooge/pkg/func_builder"
 	"scrooge/pkg/param"
@@ -13,11 +14,12 @@ import (
 )
 
 type Mod struct {
-	Name     string
-	Entities []*struct_builder.Struct
-	Repo     *repo.Repo
-	pg       *pgerudite.PgErudite
-	conv     *converter.Converter
+	Name       string
+	Entities   []*struct_builder.Struct
+	Repo       *repo.Repo
+	Controller *controller.Controller
+	pg         *pgerudite.PgErudite
+	conv       *converter.Converter
 }
 
 func NewMod(name string,
@@ -31,6 +33,7 @@ func NewMod(name string,
 	}
 
 	mod.newRepo()
+	mod.newController()
 
 	return mod
 }
@@ -78,6 +81,27 @@ func (mod *Mod) newRepo() {
 			SetReturns(param.Params{param.New().SetName(repoName).SetTyp(repoName)}))
 
 	mod.Repo = repo.New().SetStruct(repoStr).SetConstructor(repoConstructor)
+}
+
+func (mod *Mod) newController() {
+	ctrParam := param.New().SetName(mod.Repo.Struct.Name).
+		SetTyp(mod.Repo.Struct.Name).SetPkg("repo")
+	ctrName := fmt.Sprintf("%sController", mod.conv.PgToPascalCase(mod.Name))
+	str := struct_builder.New().SetName(ctrName).
+		AddField(ctrParam)
+
+	ctr := controller.New().SetStruct(str).
+		SetConstructor(
+			func_builder.New().SetName(fmt.Sprintf("New%s", ctrName)).
+				AddParam(ctrParam).AddReturn(param.New().SetName(ctrName).
+				SetTyp(ctrName)).SetBody(
+				func_builder.NewBody().SetTpl(templates.Constructor).
+					SetParams(param.Params{ctrParam}).
+					SetReturns(param.Params{param.New().SetName(ctrName).SetTyp(ctrName)}),
+			),
+		)
+
+	mod.Controller = ctr
 }
 
 func (mod *Mod) newRepoMethod(
@@ -128,12 +152,15 @@ func (mod *Mod) newStruct(strName string, fields []string) *struct_builder.Struc
 }
 
 func (mod *Mod) Generate() {
-	fmt.Println("-----entities-----\n")
+	fmt.Println("package entities")
 
 	for _, e := range mod.Entities {
 		fmt.Println(e.Generate())
 	}
 
-	fmt.Println("-----repo-----\n")
+	fmt.Println("package repo")
 	fmt.Println(mod.Repo.Generate())
+
+	fmt.Println("package controller")
+	fmt.Println(mod.Controller.Generate())
 }
