@@ -8,12 +8,12 @@ import (
 )
 
 type Body struct {
-	Params        param.Params
-	Returns       param.Params
-	Tpl           *template.Template
-	Struct        *struct_builder.Struct
-	RecipientName string
-	Table         string
+	Params    param.Params
+	Returns   param.Params
+	Tpl       *template.Template
+	Struct    *struct_builder.Struct
+	Recipient *param.Param
+	Table     string
 }
 
 func NewBody() *Body {
@@ -40,8 +40,8 @@ func (b *Body) SetStruct(str *struct_builder.Struct) *Body {
 	return b
 }
 
-func (b *Body) SetRecipientName(recipientName string) *Body {
-	b.RecipientName = recipientName
+func (b *Body) SetRecipient(recipient *param.Param) *Body {
+	b.Recipient = recipient
 	return b
 }
 

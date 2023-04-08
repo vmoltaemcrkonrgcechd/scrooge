@@ -49,12 +49,13 @@ var (
 	))
 
 	BodyRepoAdd = template.Must(template.New("BodyRepoAdd").Parse(
-		"if _, err = {{.RecipientName}}.Sq.Insert(\"{{.Table}}\").\n" +
+		"if _, err = {{.Recipient.LowerCaseName}}.Sq.Insert(\"{{.Table}}\").\n" +
 			"Columns({{.Struct.Fields.ParamSQLNames}}).\n" +
 			"Values(" +
 			"{{$str := .Struct}}" +
 			"{{range $i,$v := .Struct.Fields}}{{if ne $i 0}}, {{end}}{{$str.LowerCaseName}}.{{.Name}}{{end}}" +
 			").\n" +
+			"Suffix(\"RETURNING {{.Returns.Path.SQLName}}\")\n" +
 			"QueryRow().Scan(&{{.Returns.Path.LowerCaseName}}); err != nil {\n" +
 			"return {{.Returns.ParamNames}}\n}\n" +
 			"return {{.Returns.ParamNames}}",
