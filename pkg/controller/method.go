@@ -44,5 +44,5 @@ func (m *Method) Generate() string {
 }
 
 func (b *MethodBody) Generate() string {
-	return utils.MustExecTemplate(templates.BodyControllerAdd, b)
+	return utils.MustExecTemplate(b.Tpl, b)
 }

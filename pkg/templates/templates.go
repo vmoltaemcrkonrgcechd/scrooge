@@ -9,6 +9,12 @@ var (
 			"{{.Typ}} {{$length := len .JSON}}{{if ne $length 0}}`json:\"{{.JSON}}\"`{{end}}",
 	))
 
+	StructFieldWithParams = template.Must(template.New("StructFieldWithParams").Parse(
+		"{{if not .Embedded}}{{.Name}} {{end}}{{if .Slice}}[]{{end}}{{if .Pointer}}*{{end}}" +
+			"{{$length := len .Pkg}}{{if ne $length 0}}{{.Pkg}}.{{end}}" +
+			"{{.Typ}} {{$length := len .JSON}}{{if ne $length 0}}`params:\"{{.JSON}}\"`{{end}}",
+	))
+
 	FuncParam = template.Must(template.New("FuncParam").Parse(
 		"{{.LowerCaseName}} {{if .Slice}}[]{{end}}{{if .Pointer}}*{{end}}" +
 			"{{$length := len .Pkg}}{{if ne $length 0}}{{.Pkg}}.{{end}}{{.Typ}}",
@@ -61,6 +67,13 @@ var (
 			"return {{.Returns.ParamNames}}",
 	))
 
+	BodyRepoDelete = template.Must(template.New("BodyRepoDelete").Parse(
+		"if _, err = {{.Recipient.LowerCaseName}}.Sq.Delete(\"{{.Table}}\").\n" +
+			"Where(\"{{.Params.Path.SQLName}} = ?\", {{.Params.Path.LowerCaseName}}).Exec(); err != nil {\n" +
+			"return {{.Returns.ParamNames}}\n}\n" +
+			"return {{.Returns.ParamNames}}",
+	))
+
 	BodyControllerAdd = template.Must(template.New("BodyControllerAdd").Parse(
 		"var {{.RepoMethod.Params.Body.ToFuncParam}}\n" +
 			"if err = ctx.BodyParser(&{{.RepoMethod.Params.Body.LowerCaseName}}); " +
@@ -74,6 +87,16 @@ var (
 			"return err\n}\n" +
 			"return ctx.Status(201).JSON(struct{ {{.RepoMethod.Returns.Path.ToStructField}} }" +
 			"{ {{.RepoMethod.Returns.Path.LowerCaseName}} })",
+	))
+
+	BodyControllerDelete = template.Must(template.New("BodyControllerDelete").Parse(
+		"var params struct { {{.RepoMethod.Params.Path.ToStructFieldWithParams}} }\n" +
+			"ctx.ParamsParser(&params)\n" +
+			"if err = {{.Recipient.LowerCaseName}}." +
+			"{{.RepoMethod.Recipient.Name}}." +
+			"{{.RepoMethod.Name}}(params.{{.RepoMethod.Params.Path.Name}}); err != nil {\n" +
+			"return err\n}\n" +
+			"return nil",
 	))
 
 	Constructor = template.Must(template.New("Constructor").Parse(
