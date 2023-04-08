@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"scrooge/pkg/converter"
 	"scrooge/pkg/pgerudite"
 	"scrooge/pkg/repo"
 	"scrooge/pkg/struct_builder"
@@ -12,6 +13,7 @@ type Mod struct {
 	Entities []*struct_builder.Struct
 	Repo     *repo.Repo
 	pg       *pgerudite.PgErudite
+	conv     *converter.Converter
 }
 
 func NewMod(name string) *Mod {
