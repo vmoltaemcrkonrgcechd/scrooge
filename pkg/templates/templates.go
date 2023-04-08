@@ -61,6 +61,21 @@ var (
 			"return {{.Returns.ParamNames}}",
 	))
 
+	BodyControllerAdd = template.Must(template.New("BodyControllerAdd").Parse(
+		"var {{.RepoMethod.Params.Body.ToFuncParam}}\n" +
+			"if err = ctx.BodyParser(&{{.RepoMethod.Params.Body.LowerCaseName}}); " +
+			"err != nil {\n" +
+			"return err\n}\n" +
+			"var {{.RepoMethod.Returns.Path.ToFuncParam}}\n" +
+			"if {{.RepoMethod.Returns.ParamNames}} = " +
+			"{{.Recipient.LowerCaseName}}.{{.RepoMethod.Recipient.Name}}" +
+			".{{.RepoMethod.Name}}({{.RepoMethod.Params.ParamNames}}); " +
+			"err != nil {\n" +
+			"return err\n}\n" +
+			"return ctx.Status(201).JSON(struct{ {{.RepoMethod.Returns.Path.ToStructField}} }" +
+			"{ {{.RepoMethod.Returns.Path.LowerCaseName}} })",
+	))
+
 	Constructor = template.Must(template.New("Constructor").Parse(
 		"{{.Returns.ParamNames}} = " +
 			"{{range .Returns}}{{.Typ}}{{end}}{ {{.Params.ParamNames}} }\n" +

@@ -46,22 +46,32 @@ func (mod *Mod) C(fields ...string) *Mod {
 	//создать метод репозитория
 	pk := mod.pg.GetTable(mod.Name).GetPk()
 
-	parID := param.New().SetName(mod.conv.PgToCamelCase(pk.Name)).
-		SetTyp(mod.conv.PgTypeToGo(pk.Type)).SetIn(param.Path).SetSQLName(pk.Name)
+	parID := param.New().SetName(mod.conv.PgToPascalCase(pk.Name)).
+		SetTyp(mod.conv.PgTypeToGo(pk.Type)).SetIn(param.Path).SetSQLName(pk.Name).
+		SetJSON(mod.conv.PgToCamelCase(pk.Name))
 
 	parErr := param.New().SetName("err").SetTyp("error")
 	parStr := param.New().SetName(strName).SetTyp(strName).SetPkg("entities").
 		SetIn(param.Body)
 
-	mod.newRepoMethod(
+	rm := mod.newRepoMethod(
 		templates.BodyRepoAdd,
-		fmt.Sprintf("Add"),
+		"Add",
 		param.Params{parStr},
 		param.Params{parID, parErr},
 		str,
 	)
 
 	//создать метод контроллера
+	mod.newControllerMethod(
+		templates.BodyControllerAdd,
+		"Add",
+		param.Params{param.New().SetName("ctx").SetPkg("fiber").
+			SetPointer(true).SetTyp("Ctx")},
+		param.Params{parErr},
+		str,
+		rm,
+	)
 
 	return mod
 }
@@ -126,6 +136,39 @@ func (mod *Mod) newRepoMethod(
 	}
 
 	mod.Repo.Methods = append(mod.Repo.Methods, fn)
+
+	return fn
+}
+
+func (mod *Mod) newControllerMethod(
+	tpl *template.Template,
+	fnName string,
+	params, returns param.Params,
+	str *struct_builder.Struct,
+	repoMethod *func_builder.Func,
+) *controller.Method {
+	recipient := param.New().SetName(mod.Controller.Struct.Name).SetTyp(mod.Controller.Struct.Name)
+
+	body := func_builder.NewBody().SetTpl(tpl).SetReturns(returns).SetParams(params).
+		SetTable(mod.Name).SetStruct(str).SetRecipient(recipient)
+
+	fn := controller.NewMethod().SetRepoMethod(repoMethod).
+		SetBody(&controller.MethodBody{
+			Body:       body,
+			RepoMethod: repoMethod,
+		})
+
+	fn.SetRecipient(recipient).SetName(fnName)
+
+	for _, p := range params {
+		fn.AddParam(p)
+	}
+
+	for _, r := range returns {
+		fn.AddReturn(r)
+	}
+
+	mod.Controller.AddMethod(fn)
 
 	return fn
 }
