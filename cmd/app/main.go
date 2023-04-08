@@ -18,6 +18,7 @@ func main() {
 	mod := app.NewMod("weapon", pg, conv)
 
 	mod.C("name", "attack", "weight")
+	mod.U("name", "attack", "weight")
 	mod.D()
 
 	mod.Generate()

@@ -67,6 +67,17 @@ var (
 			"return {{.Returns.ParamNames}}",
 	))
 
+	BodyRepoEdit = template.Must(template.New("BodyRepoEdit").Parse(
+
+		"if _, err = {{.Recipient.LowerCaseName}}.Sq.Update(\"{{.Table}}\").\n" +
+			"{{range .Struct.Fields}}Set(\"{{.SQLName}}\", weapon.{{.Name}}).\n{{end}}" +
+			"Where(\"{{.Params.Path.SQLName}} = ?\", {{.Params.Path.LowerCaseName}}).\n" +
+			"Suffix(\"RETURNING {{.Returns.Path.SQLName}}\").QueryRow().\n" +
+			"Scan(&{{.Returns.Path.LowerCaseName}}); err != nil {\n" +
+			"return {{.Returns.ParamNames}}\n}\n" +
+			"return {{.Returns.ParamNames}}",
+	))
+
 	BodyRepoDelete = template.Must(template.New("BodyRepoDelete").Parse(
 		"if _, err = {{.Recipient.LowerCaseName}}.Sq.Delete(\"{{.Table}}\").\n" +
 			"Where(\"{{.Params.Path.SQLName}} = ?\", {{.Params.Path.LowerCaseName}}).Exec(); err != nil {\n" +
@@ -86,6 +97,23 @@ var (
 			"err != nil {\n" +
 			"return err\n}\n" +
 			"return ctx.Status(201).JSON(struct{ {{.RepoMethod.Returns.Path.ToStructField}} }" +
+			"{ {{.RepoMethod.Returns.Path.LowerCaseName}} })",
+	))
+
+	BodyControllerEdit = template.Must(template.New("BodyControllerEdit").Parse(
+		"var params struct { {{.RepoMethod.Params.Path.ToStructFieldWithParams}} }\n" +
+			"ctx.ParamsParser(&params)\n" +
+			"var {{.RepoMethod.Params.Body.ToFuncParam}}\n" +
+			"if err = ctx.BodyParser(&{{.RepoMethod.Params.Body.LowerCaseName}}); " +
+			"err != nil {\n" +
+			"return err\n}\n" +
+			"var {{.RepoMethod.Returns.Path.ToFuncParam}}\n" +
+			"if {{.RepoMethod.Returns.ParamNames}} = " +
+			"{{.Recipient.LowerCaseName}}.{{.RepoMethod.Recipient.Name}}" +
+			".{{.RepoMethod.Name}}({{.RepoMethod.Params.Body.LowerCaseName}}, params.{{.RepoMethod.Params.Path.Name}}); " +
+			"err != nil {\n" +
+			"return err\n}\n" +
+			"return ctx.JSON(struct{ {{.RepoMethod.Returns.Path.ToStructField}} }" +
 			"{ {{.RepoMethod.Returns.Path.LowerCaseName}} })",
 	))
 
