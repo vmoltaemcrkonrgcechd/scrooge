@@ -2,6 +2,8 @@ package struct_builder
 
 import (
 	"scrooge/pkg/param"
+	"scrooge/pkg/templates"
+	"scrooge/pkg/utils"
 	"strings"
 )
 
@@ -30,4 +32,8 @@ func (s *Struct) LowerCaseName() string {
 	}
 
 	return strings.ToLower(s.Name[:1]) + s.Name[1:]
+}
+
+func (s *Struct) Generate() string {
+	return utils.MustExecTemplate(templates.Struct, s)
 }

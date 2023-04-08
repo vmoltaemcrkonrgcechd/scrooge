@@ -38,3 +38,7 @@ func (p Params) ParamNames() string {
 func (p Params) ParamSQLNames() string {
 	return utils.MustExecTemplate(templates.ParamSQLNames, p)
 }
+
+func (p Params) Types() string {
+	return utils.MustExecTemplate(templates.Repo, p)
+}

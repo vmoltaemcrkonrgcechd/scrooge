@@ -36,14 +36,15 @@ var (
 	))
 
 	Repo = template.Must(template.New("Repo").Parse(
-		`{{.Struct.Generate}}`,
+		"{{.Struct.Generate}}\n" +
+			"{{.Constructor.Generate}}\n" +
+			"{{range .Methods}}{{.Generate}}\n{{end}}",
 	))
 
 	Func = template.Must(template.New("Func").Parse(
 		"func {{if ne .Recipient nil}}{{.Recipient.ToRecipient}} {{end}}" +
 			"{{.Name}}({{.Params.Generate}}) " +
-			"{{$length := len .Returns}}{{if ge $length 2}}({{end}}" +
-			"{{.Returns.Generate}}{{if ge $length 2}}){{end}} {\n" +
+			"({{.Returns.Generate}}) {\n" +
 			"{{.Body.Generate}}\n}",
 	))
 
@@ -56,6 +57,12 @@ var (
 			").\n" +
 			"QueryRow().Scan(&{{.Returns.Path.LowerCaseName}}); err != nil {\n" +
 			"return {{.Returns.ParamNames}}\n}\n" +
+			"return {{.Returns.ParamNames}}",
+	))
+
+	Constructor = template.Must(template.New("Constructor").Parse(
+		"{{.Returns.ParamNames}} = " +
+			"{{range .Returns}}{{.Typ}}{{end}}{ {{.Params.ParamNames}} }\n" +
 			"return {{.Returns.ParamNames}}",
 	))
 )
