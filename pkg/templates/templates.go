@@ -82,6 +82,22 @@ var (
 			"return {{.Returns.ParamNames}}",
 	))
 
+	BodyRepoAll = template.Must(template.New("BodyRepoAll").Parse(
+		"rows, err := {{.Recipient.LowerCaseName}}." +
+			"Sq.Select({{.Struct.Fields.ParamSQLNames}})." +
+			"From(\"{{.Table}}\").Query()\n" +
+			"if err != nil {\n" +
+			"return {{.Returns.ParamNames}}\n}\n" +
+			"var el entities.{{.Struct.Name}}\n" +
+			"for rows.Next() {\n" +
+			"if err = rows.Scan(" +
+			"{{range $i,$v := .Struct.Fields}}{{if ne $i 0}}, {{end}}&el.{{.Name}}{{end}}" +
+			"); err != nil {\n" +
+			"return {{.Returns.ParamNames}}\n}\n" +
+			"{{.Returns.Body.LowerCaseName}} = append({{.Returns.Body.LowerCaseName}}, el)\n}\n" +
+			"return {{.Returns.ParamNames}}",
+	))
+
 	BodyRepoEdit = template.Must(template.New("BodyRepoEdit").Parse(
 
 		"if err = {{.Recipient.LowerCaseName}}.Sq.Update(\"{{.Table}}\").\n" +
@@ -141,6 +157,15 @@ var (
 			"{{.RepoMethod.Name}}(params.{{.RepoMethod.Params.Path.Name}}); err != nil {\n" +
 			"return err\n}\n" +
 			"return nil",
+	))
+
+	BodyControllerAll = template.Must(template.New("BodyControllerAll").Parse(
+		"var {{.RepoMethod.Returns.Body.ToFuncParam}}\n" +
+			"if {{.RepoMethod.Returns.Body.LowerCaseName}}, err = " +
+			"{{.Recipient.LowerCaseName}}.{{.RepoMethod.Recipient.Name}}" +
+			".{{.RepoMethod.Name}}(); err != nil {\n" +
+			"return err\n}\n" +
+			"return ctx.JSON({{.RepoMethod.Returns.Body.LowerCaseName}})",
 	))
 
 	Constructor = template.Must(template.New("Constructor").Parse(

@@ -2,21 +2,7 @@
   "url": "postgresql://postgres:4100@:4100/pocu?sslmode=disable",
   "commands": [
     {
-      "typ": "c",
-      "mod": "weapon",
-      "info": {
-        "columns": ["name","attack", "weight"]
-      }
-    },
-    {
-      "typ": "u",
-      "mod": "weapon",
-      "info": {
-        "columns": ["name","attack", "weight"]
-      }
-    },
-    {
-      "typ": "d",
+      "typ": "r",
       "mod": "weapon"
     }
   ]

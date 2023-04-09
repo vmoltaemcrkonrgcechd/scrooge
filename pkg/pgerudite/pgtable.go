@@ -15,6 +15,14 @@ func (t PgTable) GetColumn(columnName string) (col PgColumn) {
 	return col
 }
 
+func (t PgTable) Names() (names []string) {
+	for _, c := range t.Columns {
+		names = append(names, c.Name)
+	}
+
+	return names
+}
+
 func (t PgTable) GetColumns(fieldNames ...string) (columns []PgColumn) {
 	if fieldNames == nil {
 		return t.Columns
