@@ -1,0 +1,12 @@
+{
+  "url": "postgresql://postgres:4100@:4100/pocu?sslmode=disable",
+  "commands": [
+    {
+      "typ": "c",
+      "mod": "weapon",
+      "info": {
+        "columns": ["attack", "weight"]
+      }
+    }
+  ]
+}
