@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -75,10 +76,15 @@ func (app *App) Exec() {
 	app.mustWriteFile(path+"\\"+"pg\\"+"pg.go", app.getPG())
 
 	app.mustExecCmd(path, "go", "mod", "init", app.ModName)
-	app.mustExecCmd(path, "go", "get", "github.com/gofiber/fiber/v2", app.ModName)
 	app.mustExecCmd(path, "go", "get", "github.com/gofiber/swagger", app.ModName)
+	app.mustExecCmd(path, "go", "get", "github.com/gofiber/fiber/v2", app.ModName)
 	app.mustExecCmd(path, "go", "get", "github.com/Masterminds/squirrel", app.ModName)
 	app.mustExecCmd(path, "go", "get", "github.com/lib/pq", app.ModName)
+	app.mustExecCmd(path, "go", "get", "golang.org/x/tools/cmd/goimports", app.ModName)
+	app.mustExecCmd(path, "swag", "init", ".", app.ModName)
+	app.mustExecCmd(path, "goimports", "-w", ".", app.ModName)
+
+	app.raiseVersion(path)
 }
 
 const (
@@ -127,12 +133,39 @@ func (app *App) getPG() string {
 func (app *App) mustExecCmd(cd, name string, arg ...string) {
 	cmd := exec.Command(name, arg...)
 	cmd.Dir = cd
-
-	fmt.Println(cd, cmd.String())
-
 	if err := cmd.Run(); err != nil {
-		fmt.Println(err)
-
 		return
+	}
+}
+
+func (app *App) mustReadFile(name string) []byte {
+	data, err := os.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+
+	return data
+}
+
+func (app *App) raiseVersion(path string) {
+	data := app.mustReadFile(path + "\\" + "main.go")
+
+	newData := bytes.ReplaceAll(data, []byte("\"github.com/gofiber/fiber\""), []byte("\"github.com/gofiber/fiber/v2\""))
+
+	newData = bytes.ReplaceAll(newData, []byte("import ("),
+		[]byte(fmt.Sprintf("import (\n\t_ \"%s/docs\"\n", app.ModName)))
+
+	app.mustWriteFile(path+"\\"+"main.go", string(newData))
+
+	files, err := os.ReadDir(path + "\\controller")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _, f := range files {
+		data := app.mustReadFile(path + "\\controller\\" + f.Name())
+		newData := bytes.ReplaceAll(data, []byte("\"github.com/gofiber/fiber\""), []byte("\"github.com/gofiber/fiber/v2\""))
+		app.mustWriteFile(path+"\\controller\\"+f.Name(), string(newData))
 	}
 }
