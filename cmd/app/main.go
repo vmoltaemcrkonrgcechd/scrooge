@@ -18,7 +18,7 @@ func main() {
 		log.Fatal("t")
 	}
 
-	data, err := os.ReadFile(*t)
+	data, err := os.ReadFile(*t + "\\.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func main() {
 
 	conv := converter.New()
 
-	a := app.New(pg, conv)
+	a := app.New(pg, conv, *t, cfg.URL)
 
 	for _, cmd := range cfg.Commands {
 		a.Command(cmd)

@@ -10,6 +10,7 @@ type Method struct {
 	*func_builder.Func
 	Body       *MethodBody
 	RepoMethod *func_builder.Func
+	Typ        string
 }
 
 type MethodBody struct {
@@ -31,6 +32,11 @@ func NewMethod() *Method {
 
 func (m *Method) SetRepoMethod(repoMethod *func_builder.Func) *Method {
 	m.RepoMethod = repoMethod
+	return m
+}
+
+func (m *Method) SetTyp(typ string) *Method {
+	m.Typ = typ
 	return m
 }
 

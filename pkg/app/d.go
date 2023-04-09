@@ -29,5 +29,6 @@ func (mod *Mod) D() {
 		param.Params{parErr},
 		nil,
 		repoMethod,
+		"Delete",
 	)
 }

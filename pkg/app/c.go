@@ -39,6 +39,7 @@ func (mod *Mod) C(fields ...string) *Mod {
 		param.Params{parErr},
 		str,
 		rm,
+		"Post",
 	)
 
 	return mod

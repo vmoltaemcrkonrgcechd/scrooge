@@ -55,13 +55,13 @@ var (
 	))
 
 	BodyRepoAdd = template.Must(template.New("BodyRepoAdd").Parse(
-		"if _, err = {{.Recipient.LowerCaseName}}.Sq.Insert(\"{{.Table}}\").\n" +
+		"if err = {{.Recipient.LowerCaseName}}.Sq.Insert(\"{{.Table}}\").\n" +
 			"Columns({{.Struct.Fields.ParamSQLNames}}).\n" +
 			"Values(" +
 			"{{$str := .Struct}}" +
 			"{{range $i,$v := .Struct.Fields}}{{if ne $i 0}}, {{end}}{{$str.LowerCaseName}}.{{.Name}}{{end}}" +
 			").\n" +
-			"Suffix(\"RETURNING {{.Returns.Path.SQLName}}\")\n" +
+			"Suffix(\"RETURNING {{.Returns.Path.SQLName}}\").\n" +
 			"QueryRow().Scan(&{{.Returns.Path.LowerCaseName}}); err != nil {\n" +
 			"return {{.Returns.ParamNames}}\n}\n" +
 			"return {{.Returns.ParamNames}}",
@@ -69,7 +69,7 @@ var (
 
 	BodyRepoEdit = template.Must(template.New("BodyRepoEdit").Parse(
 
-		"if _, err = {{.Recipient.LowerCaseName}}.Sq.Update(\"{{.Table}}\").\n" +
+		"if err = {{.Recipient.LowerCaseName}}.Sq.Update(\"{{.Table}}\").\n" +
 			"{{range .Struct.Fields}}Set(\"{{.SQLName}}\", weapon.{{.Name}}).\n{{end}}" +
 			"Where(\"{{.Params.Path.SQLName}} = ?\", {{.Params.Path.LowerCaseName}}).\n" +
 			"Suffix(\"RETURNING {{.Returns.Path.SQLName}}\").QueryRow().\n" +
@@ -131,5 +131,48 @@ var (
 		"{{.Returns.ParamNames}} = " +
 			"{{range .Returns}}{{.Typ}}{{end}}{ {{.Params.ParamNames}} }\n" +
 			"return {{.Returns.ParamNames}}",
+	))
+
+	Main = template.Must(template.New("Main").Parse(
+		"package main\n" +
+			"func main() {\n" +
+			"app := fiber.New()\n" +
+			"app.Use(cors.New(cors.Config{\n" +
+			"AllowOrigins:     \"http://localhost:8080\",\n" +
+			"AllowMethods:     \"GET,POST,HEAD,DELETE,PATCH\",\n" +
+			"AllowCredentials: true,\n" +
+			"}))\n" +
+			"pq, err := pg.New(\"{{.PgURL}}\")\n" +
+			"if err != nil {\n" +
+			"panic(err)\n}\n" +
+			"{{range $k,$v := .Mods}}" +
+			"{{$v.Repo.Struct.Name}} := repo.{{$v.Repo.Constructor.Name}}(pq)\n" +
+			"{{$v.Controller.Struct.Name}} := controller.{{$v.Controller.Constructor.Name}}" +
+			"({{$v.Repo.Struct.Name}})\n" +
+			"{{range $v.Controller.Methods}}app.{{.Typ}}" +
+			"(\"/\", {{$v.Controller.Struct.Name}}.{{.Name}})\n{{end}}" +
+			"{{end}}" +
+			"log.Fatal(app.Listen(\":80\"))\n}\n",
+	))
+
+	PG = template.Must(template.New("PG").Parse(
+		"package pg\n" +
+			"import (\n" +
+			"\"database/sql\"\n" +
+			"sq \"github.com/Masterminds/squirrel\"\n" +
+			"_ \"github.com/lib/pq\"\n)\n" +
+			"type PG struct {\n" +
+			"Sq sq.StatementBuilderType\n" +
+			"DB *sql.DB\n}\n" +
+			"func New(url string) (*PG, error) {\n" +
+			"db, err := sql.Open(\"postgres\", url)\n" +
+			"if err != nil {\n" +
+			"return nil, err\n}\n" +
+			"return &PG{\n" +
+			"Sq: sq.StatementBuilder.\n" +
+			"PlaceholderFormat(sq.Dollar).\n" +
+			"RunWith(db),\n" +
+			"DB: db,\n" +
+			"}, nil\n}\n",
 	))
 )

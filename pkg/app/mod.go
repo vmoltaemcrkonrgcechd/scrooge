@@ -108,6 +108,7 @@ func (mod *Mod) newControllerMethod(
 	params, returns param.Params,
 	str *struct_builder.Struct,
 	repoMethod *func_builder.Func,
+	typ string,
 ) *controller.Method {
 	recipient := param.New().SetName(mod.Controller.Struct.Name).SetTyp(mod.Controller.Struct.Name)
 
@@ -118,7 +119,7 @@ func (mod *Mod) newControllerMethod(
 		SetBody(&controller.MethodBody{
 			Body:       body,
 			RepoMethod: repoMethod,
-		})
+		}).SetTyp(typ)
 
 	fn.SetRecipient(recipient).SetName(fnName)
 
@@ -168,4 +169,26 @@ func (mod *Mod) Generate() {
 
 	fmt.Println("package controller")
 	fmt.Println(mod.Controller.Generate())
+}
+
+func (mod *Mod) GenerateRepo() string {
+	data := "package repo\n"
+	data += mod.Repo.Generate()
+	return data
+}
+
+func (mod *Mod) GenerateController() string {
+	data := "package controller\n"
+	data += mod.Controller.Generate()
+	return data
+}
+
+func (mod *Mod) GenerateEntities() string {
+	data := "package entities\n"
+
+	for _, e := range mod.Entities {
+		data += e.Generate() + "\n"
+	}
+
+	return data
 }

@@ -39,5 +39,6 @@ func (mod *Mod) U(fields ...string) {
 		param.Params{parErr},
 		str,
 		rm,
+		"Patch",
 	)
 }
