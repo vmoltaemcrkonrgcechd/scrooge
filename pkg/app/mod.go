@@ -115,7 +115,7 @@ func (mod *Mod) newControllerMethod(
 	body := func_builder.NewBody().SetTpl(tpl).SetReturns(returns).SetParams(params).
 		SetTable(mod.Name).SetStruct(str).SetRecipient(recipient)
 
-	fn := controller.NewMethod().SetRepoMethod(repoMethod).
+	fn := controller.NewMethod(mod.Name).SetRepoMethod(repoMethod).
 		SetBody(&controller.MethodBody{
 			Body:       body,
 			RepoMethod: repoMethod,

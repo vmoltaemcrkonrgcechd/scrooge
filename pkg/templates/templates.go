@@ -12,7 +12,7 @@ var (
 	StructFieldWithParams = template.Must(template.New("StructFieldWithParams").Parse(
 		"{{if not .Embedded}}{{.Name}} {{end}}{{if .Slice}}[]{{end}}{{if .Pointer}}*{{end}}" +
 			"{{$length := len .Pkg}}{{if ne $length 0}}{{.Pkg}}.{{end}}" +
-			"{{.Typ}} {{$length := len .JSON}}{{if ne $length 0}}`params:\"{{.JSON}}\"`{{end}}",
+			"{{.Typ}} {{$length := len .JSON}}{{if ne $length 0}}`query:\"{{.JSON}}\"`{{end}}",
 	))
 
 	FuncParam = template.Must(template.New("FuncParam").Parse(
@@ -54,6 +54,21 @@ var (
 			"{{.Body.Generate}}\n}",
 	))
 
+	Method = template.Must(template.New("Func").Parse(
+		"// @tags {{.ModName}}\n" +
+			"{{range .RepoMethod.Params}}" +
+			"// @param {{.LowerCaseName}} " +
+			"{{if eq .In 0}}body{{else}}query{{end}} " +
+			"{{.GetTyp}} true \"{{.LowerCaseName}}\"" +
+			"\n" +
+			"{{end}}" +
+			"// @router /{{.ModName}} [{{.LowerTyp}}]\n" +
+			"func {{if ne .Recipient nil}}{{.Recipient.ToRecipient}} {{end}}" +
+			"{{.Name}}({{.Params.Generate}}) " +
+			"({{.Returns.Generate}}) {\n" +
+			"{{.Body.Generate}}\n}",
+	))
+
 	BodyRepoAdd = template.Must(template.New("BodyRepoAdd").Parse(
 		"if err = {{.Recipient.LowerCaseName}}.Sq.Insert(\"{{.Table}}\").\n" +
 			"Columns({{.Struct.Fields.ParamSQLNames}}).\n" +
@@ -70,7 +85,8 @@ var (
 	BodyRepoEdit = template.Must(template.New("BodyRepoEdit").Parse(
 
 		"if err = {{.Recipient.LowerCaseName}}.Sq.Update(\"{{.Table}}\").\n" +
-			"{{range .Struct.Fields}}Set(\"{{.SQLName}}\", weapon.{{.Name}}).\n{{end}}" +
+			"{{$str := .Struct}}{{range .Struct.Fields}}Set(\"{{.SQLName}}\", {{$str.LowerCaseName}}." +
+			"{{.Name}}).\n{{end}}" +
 			"Where(\"{{.Params.Path.SQLName}} = ?\", {{.Params.Path.LowerCaseName}}).\n" +
 			"Suffix(\"RETURNING {{.Returns.Path.SQLName}}\").QueryRow().\n" +
 			"Scan(&{{.Returns.Path.LowerCaseName}}); err != nil {\n" +
@@ -102,7 +118,7 @@ var (
 
 	BodyControllerEdit = template.Must(template.New("BodyControllerEdit").Parse(
 		"var params struct { {{.RepoMethod.Params.Path.ToStructFieldWithParams}} }\n" +
-			"ctx.ParamsParser(&params)\n" +
+			"ctx.QueryParser(&params)\n" +
 			"var {{.RepoMethod.Params.Body.ToFuncParam}}\n" +
 			"if err = ctx.BodyParser(&{{.RepoMethod.Params.Body.LowerCaseName}}); " +
 			"err != nil {\n" +
@@ -119,7 +135,7 @@ var (
 
 	BodyControllerDelete = template.Must(template.New("BodyControllerDelete").Parse(
 		"var params struct { {{.RepoMethod.Params.Path.ToStructFieldWithParams}} }\n" +
-			"ctx.ParamsParser(&params)\n" +
+			"ctx.QueryParser(&params)\n" +
 			"if err = {{.Recipient.LowerCaseName}}." +
 			"{{.RepoMethod.Recipient.Name}}." +
 			"{{.RepoMethod.Name}}(params.{{.RepoMethod.Params.Path.Name}}); err != nil {\n" +
@@ -145,12 +161,13 @@ var (
 			"pq, err := pg.New(\"{{.PgURL}}\")\n" +
 			"if err != nil {\n" +
 			"panic(err)\n}\n" +
+			"app.Get(\"/swagger-ui/*\", swagger.New(swagger.ConfigDefault))\n" +
 			"{{range $k,$v := .Mods}}" +
 			"{{$v.Repo.Struct.Name}} := repo.{{$v.Repo.Constructor.Name}}(pq)\n" +
 			"{{$v.Controller.Struct.Name}} := controller.{{$v.Controller.Constructor.Name}}" +
 			"({{$v.Repo.Struct.Name}})\n" +
 			"{{range $v.Controller.Methods}}app.{{.Typ}}" +
-			"(\"/\", {{$v.Controller.Struct.Name}}.{{.Name}})\n{{end}}" +
+			"(\"/{{.ModName}}\", {{$v.Controller.Struct.Name}}.{{.Name}})\n{{end}}" +
 			"{{end}}" +
 			"log.Fatal(app.Listen(\":80\"))\n}\n",
 	))

@@ -4,6 +4,7 @@ import (
 	"scrooge/pkg/func_builder"
 	"scrooge/pkg/templates"
 	"scrooge/pkg/utils"
+	"strings"
 )
 
 type Method struct {
@@ -11,6 +12,7 @@ type Method struct {
 	Body       *MethodBody
 	RepoMethod *func_builder.Func
 	Typ        string
+	ModName    string
 }
 
 type MethodBody struct {
@@ -24,9 +26,10 @@ func NewMethodBody() *MethodBody {
 	}
 }
 
-func NewMethod() *Method {
+func NewMethod(modName string) *Method {
 	return &Method{
-		Func: func_builder.New(),
+		Func:    func_builder.New(),
+		ModName: modName,
 	}
 }
 
@@ -46,9 +49,13 @@ func (m *Method) SetBody(body *MethodBody) *Method {
 }
 
 func (m *Method) Generate() string {
-	return utils.MustExecTemplate(templates.Func, m)
+	return utils.MustExecTemplate(templates.Method, m)
 }
 
 func (b *MethodBody) Generate() string {
 	return utils.MustExecTemplate(b.Tpl, b)
+}
+
+func (m *Method) LowerTyp() string {
+	return strings.ToLower(m.Typ)
 }

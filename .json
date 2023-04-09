@@ -5,8 +5,19 @@
       "typ": "c",
       "mod": "weapon",
       "info": {
-        "columns": ["attack", "weight"]
+        "columns": ["name","attack", "weight"]
       }
+    },
+    {
+      "typ": "u",
+      "mod": "weapon",
+      "info": {
+        "columns": ["name","attack", "weight"]
+      }
+    },
+    {
+      "typ": "d",
+      "mod": "weapon"
     }
   ]
 }

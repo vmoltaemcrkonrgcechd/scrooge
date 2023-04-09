@@ -96,3 +96,13 @@ func (p *Param) ToFuncParam() string {
 func (p *Param) ToRecipient() string {
 	return utils.MustExecTemplate(templates.Recipient, p)
 }
+
+func (p *Param) GetTyp() string {
+	var typ string
+
+	if p.Pkg != "" {
+		typ += p.Pkg + "."
+	}
+
+	return typ + p.Typ
+}

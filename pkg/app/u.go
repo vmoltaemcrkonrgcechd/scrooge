@@ -26,7 +26,9 @@ func (mod *Mod) U(fields ...string) {
 		templates.BodyRepoEdit,
 		"Edit",
 		param.Params{parStr, parID},
-		param.Params{parID, parErr},
+		param.Params{param.New().SetName(mod.conv.PgToPascalCase("result")).
+			SetTyp(mod.conv.PgTypeToGo(pk.Type)).SetIn(param.Path).SetSQLName(pk.Name).
+			SetJSON(mod.conv.PgToCamelCase(pk.Name)), parErr},
 		str,
 	)
 
